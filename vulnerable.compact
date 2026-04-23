@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// vulnerable.compact
+//
+// Demonstrates the ownPublicKey() access control vulnerability in Compact.
+//
+// THE PROBLEM:
+// ownPublicKey() compiles to an unconstrained private_input in the ZK circuit.
+// The prover can set it to any value — including the stored vault_owner read
+// from public ledger state — without knowing any secret key.
+//
+// ATTACK (4 steps):
+//   1. Read vault_owner from the ledger (it is public state)
+//   2. Build a CircuitContext where ownPublicKey() returns that value
+//   3. Generate a valid ZK proof — assert(storedOwner == storedOwner) passes
+//   4. Submit the transaction — privileged action executes with no secret key
+//
+// DO NOT use this pattern in production contracts.
+
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// vault_owner is stored as a ZswapCoinPublicKey via disclose(ownPublicKey()).
+// Because ownPublicKey() is unconstrained, this stored value provides
+// NO real access control — any prover who reads it can spoof it.
+export ledger vault_owner: ZswapCoinPublicKey;
+
+// Registers the caller as owner by storing their claimed public key.
+// ownPublicKey() is just a private_input — no proof of key ownership occurs.
+export circuit deposit(): [] {
+  vault_owner = disclose(ownPublicKey());
+}
+
+// VULNERABLE: asserts the caller's claimed public key equals the stored owner.
+// Since vault_owner is public ledger state, any attacker can read it and
+// construct a proof where ownPublicKey() == vault_owner without any secret key.
+export circuit withdraw(): [] {
+  assert(ownPublicKey() == vault_owner, "Not the vault owner");
+}

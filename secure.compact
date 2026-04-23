@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// secure.compact
+//
+// Demonstrates the correct access control pattern in Compact:
+// witness-based secret key + persistentHash commitment.
+//
+// THE FIX:
+// Instead of storing ownPublicKey() (a free variable the prover controls),
+// we store a persistentHash commitment of the caller's secret key.
+// Ownership verification requires re-deriving the same hash — which is only
+// possible if the caller knows the original secret key (the hash preimage).
+//
+// This mirrors the pattern used in midnightntwrk/example-bboard:
+//   owner = disclose(persistentHash([prefix, sk]))
+//   assert(persistentHash([prefix, sk]) == owner)
+//
+// WHY IT WORKS:
+// The ZK proof proves: "I know an sk such that hash(prefix, sk) == vault_owner"
+// An attacker who reads vault_owner from the ledger cannot reverse persistentHash
+// to find sk, so they cannot generate a valid proof for withdraw().
+
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// vault_owner stores a persistentHash commitment to the owner's secret key —
+// NOT the key itself. Knowing this value reveals nothing about the secret key.
+export ledger vault_owner: Bytes<32>;
+
+// localSecretKey is a witness: a private input supplied off-chain by the caller.
+// The circuit constrains it by requiring it to produce the correct hash.
+witness localSecretKey(): Bytes<32>;
+
+// Derives a commitment from the secret key using domain-separated hashing.
+// The "vault:owner:" prefix ensures this commitment cannot be reused to satisfy
+// constraints in other circuits (domain separation / replay protection).
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "vault:owner:"), sk]);
+}
+
+// Registers the caller as owner by storing a hash of their secret key.
+// The hash is one-way: vault_owner reveals nothing about localSecretKey().
+export circuit deposit(): [] {
+  vault_owner = disclose(ownerCommitment(localSecretKey()));
+}
+
+// SECURE: proves the caller knows the secret key behind the stored commitment.
+// The ZK circuit constrains localSecretKey() — the prover must supply an sk
+// such that hash("vault:owner:", sk) == vault_owner. Without the original sk,
+// no valid proof can be constructed, even if vault_owner is read from the chain.
+export circuit withdraw(): [] {
+  assert(
+    ownerCommitment(localSecretKey()) == vault_owner,
+    "Not the vault owner"
+  );
+}
