@@ -1,7 +1,7 @@
 # ownPublicKey() Access Control Vulnerability — Proof of Concept
 
 Companion code for the tutorial:
-**[The Zero-Knowledge Trap: Why ownPublicKey() Cannot Prove Identity in Compact](YOUR_DEVTO_URL_HERE)**
+**[The Zero-Knowledge Trap: Why ownPublicKey() Cannot Prove Identity in Compact](https://dev.to/iamharrie/the-zero-knowledge-trap-why-ownpublickey-cannot-prove-identity-in-compact-169i)**
 
 Submitted as part of the [Midnight Eclipse Content Bounty Program](https://forum.midnight.network/t/midnight-content-bounty-program-eclipse/1148) — Issue [#295](https://github.com/midnightntwrk/contributor-hub/issues/295).
 
