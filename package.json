@@ -4,32 +4,45 @@
   "description": "Proof-of-concept for the ownPublicKey() access control vulnerability in Midnight Compact",
   "type": "module",
   "scripts": {
-    "test":             "node --experimental-vm-modules node_modules/.bin/jest",
-    "deploy-vulnerable":"ts-node src/deploy-vulnerable.ts",
-    "attack":           "ts-node src/attack.ts",
-    "attack-secure":    "ts-node src/attack-secure.ts"
-  },
-  "dependencies": {
-    "@midnight-ntwrk/compact-runtime":                   "*",
-    "@midnight-ntwrk/midnight-js-contracts":             "*",
-    "@midnight-ntwrk/midnight-js-indexer-api":           "*",
-    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "*",
-    "@midnight-ntwrk/midnight-js-types":                 "*"
+    "test":              "node --experimental-vm-modules node_modules/.bin/jest",
+    "deploy-vulnerable": "ts-node src/deploy-vulnerable.ts",
+    "attack":            "ts-node src/attack.ts",
+    "attack-secure":     "ts-node src/attack-secure.ts"
   },
   "devDependencies": {
-    "@types/jest":   "^29.0.0",
-    "@types/node":   "^20.0.0",
-    "jest":          "^29.0.0",
-    "ts-jest":       "^29.0.0",
-    "ts-node":       "^10.0.0",
-    "typescript":    "^5.0.0"
+    "@types/jest":  "^29.0.0",
+    "@types/node":  "^20.0.0",
+    "jest":         "^29.0.0",
+    "ts-jest":      "^29.0.0",
+    "ts-node":      "^10.0.0",
+    "typescript":   "^5.0.0"
+  },
+  "peerDependencies": {
+    "@midnight-ntwrk/compact-runtime":                    "*",
+    "@midnight-ntwrk/midnight-js-contracts":              "*",
+    "@midnight-ntwrk/midnight-js-indexer-api":            "*",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "*",
+    "@midnight-ntwrk/midnight-js-types":                  "*"
+  },
+  "peerDependenciesMeta": {
+    "@midnight-ntwrk/compact-runtime":                    { "optional": true },
+    "@midnight-ntwrk/midnight-js-contracts":              { "optional": true },
+    "@midnight-ntwrk/midnight-js-indexer-api":            { "optional": true },
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": { "optional": true },
+    "@midnight-ntwrk/midnight-js-types":                  { "optional": true }
   },
   "jest": {
-    "preset":              "ts-jest/presets/default-esm",
-    "testEnvironment":     "node",
+    "preset":                 "ts-jest/presets/default-esm",
+    "testEnvironment":        "node",
     "extensionsToTreatAsEsm": [".ts"],
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
-    }
+    },
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": true
+      }
+    },
+    "testMatch": ["**/test/**/*.test.ts"]
   }
 }

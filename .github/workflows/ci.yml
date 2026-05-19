@@ -6,7 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  compile:
+    name: Compile Compact contracts
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +24,6 @@ jobs:
           compact update
           echo "=== Compiler version ==="
           compact --version
-          echo "=== Language version ==="
-          compact compile --version || true
 
       - name: Compile vulnerable.compact
         run: |
@@ -44,6 +43,13 @@ jobs:
           name: compiled-contracts
           path: contracts/managed/
 
+  test:
+    name: Run exploit test suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,14 +58,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run exploit test suite
+      - name: Run tests
         run: npm test
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            coverage/
-            test-results/
