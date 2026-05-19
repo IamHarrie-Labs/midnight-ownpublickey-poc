@@ -1,0 +1,65 @@
+name: Compile & Test
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Compact toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.compact/bin" >> $GITHUB_PATH
+
+      - name: Update to latest compiler
+        run: |
+          compact update
+          echo "=== Compiler version ==="
+          compact --version
+          echo "=== Language version ==="
+          compact compile --version || true
+
+      - name: Compile vulnerable.compact
+        run: |
+          mkdir -p contracts/managed/vulnerable
+          compact compile contracts/vulnerable.compact contracts/managed/vulnerable
+          echo "✅ vulnerable.compact compiled"
+
+      - name: Compile secure.compact
+        run: |
+          mkdir -p contracts/managed/secure
+          compact compile contracts/secure.compact contracts/managed/secure
+          echo "✅ secure.compact compiled"
+
+      - name: Upload compiled artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-contracts
+          path: contracts/managed/
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run exploit test suite
+        run: npm test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results/

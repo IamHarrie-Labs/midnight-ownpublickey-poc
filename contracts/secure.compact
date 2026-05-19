@@ -19,6 +19,12 @@
 // The ZK proof proves: "I know an sk such that hash(prefix, sk) == vault_owner"
 // An attacker who reads vault_owner from the ledger cannot reverse persistentHash
 // to find sk, so they cannot generate a valid proof for withdraw().
+//
+// NOTE ON LINKABILITY:
+// This single-owner vault does not include a sequence parameter because
+// ownership is fixed and non-rotating. For contracts with rotating ownership
+// or repeated identity disclosures, follow bboard's publicKey(sk, sequence)
+// pattern to prevent transaction linkability across rounds.
 
 pragma language_version >= 0.23;
 

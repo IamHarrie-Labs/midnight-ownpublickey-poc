@@ -1,0 +1,46 @@
+version: '3.8'
+
+# Local Midnight development stack for running the PoC end-to-end.
+# Starts a proof server, a dev Midnight node, and an indexer.
+#
+# Usage:
+#   docker compose up -d
+#   npx ts-node src/deploy-vulnerable.ts
+#   npx ts-node src/attack.ts
+
+services:
+  proof-server:
+    image: midnightntwrk/proof-server:latest
+    ports:
+      - '6300:6300'
+    environment:
+      NETWORK_ID: undeployed
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:6300/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  midnight-node:
+    image: midnightntwrk/midnight-node:latest
+    ports:
+      - '9933:9933'   # HTTP RPC
+      - '9944:9944'   # WebSocket RPC
+    command: --dev --tmp --rpc-cors=all
+    environment:
+      NETWORK_ID: undeployed
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9933/health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  indexer:
+    image: midnightntwrk/indexer:latest
+    ports:
+      - '8088:8088'
+    environment:
+      INDEXER_NODE_ENDPOINT: ws://midnight-node:9944
+    depends_on:
+      midnight-node:
+        condition: service_healthy

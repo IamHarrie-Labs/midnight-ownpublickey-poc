@@ -1,0 +1,7 @@
+# Compiled contract artifacts are generated here by the CI pipeline.
+# Run locally with:
+#   compact compile contracts/vulnerable.compact contracts/managed/vulnerable
+#   compact compile contracts/secure.compact contracts/managed/secure
+#
+# The CI workflow (.github/workflows/ci.yml) compiles both contracts
+# before running the test suite.

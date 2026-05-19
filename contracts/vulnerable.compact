@@ -11,8 +11,8 @@
 //
 // ATTACK (4 steps):
 //   1. Read vault_owner from the ledger (it is public state)
-//   2. Build a CircuitContext where ownPublicKey() returns that value
-//   3. Generate a valid ZK proof — assert(storedOwner == storedOwner) passes
+//   2. Send a prove request with own_public_key = vault_owner to the proof server
+//   3. Generate a valid ZK proof — assert(vault_owner == vault_owner) passes
 //   4. Submit the transaction — privileged action executes with no secret key
 //
 // DO NOT use this pattern in production contracts.
@@ -35,6 +35,8 @@ export circuit deposit(): [] {
 // VULNERABLE: asserts the caller's claimed public key equals the stored owner.
 // Since vault_owner is public ledger state, any attacker can read it and
 // construct a proof where ownPublicKey() == vault_owner without any secret key.
+// Note: disclose(ownPublicKey()) compiles because ownPublicKey() is a witness
+// output — a private value the circuit reveals to the ledger via disclose().
 export circuit withdraw(): [] {
   assert(ownPublicKey() == vault_owner, "Not the vault owner");
 }
